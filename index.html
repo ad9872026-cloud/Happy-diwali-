@@ -28,7 +28,7 @@ canvas{position:fixed;inset:0;display:block;touch-action:none}
 <button class="b" id="go" style="width:100%">Enter the festival</button>
 </div></div>
 <div id="hud">
-<div><h1>Happy Diwali ♥</h1><p>Drag on screen or use arrow keys / WASD to walk · visit the diya couple in the centre</p></div>
+<div><h1>Happy Diwali ♥</h1><p>Drag on screen or use arrow keys / WASD to walk · tap 🪔 Light diya and the couple lights it together</p></div>
 <div class="bot"><div id="bar">
 <button class="b" id="draw">🌸 Hold to draw</button>
 <button class="b" id="fly">🏮 Let it fly</button>
@@ -76,14 +76,22 @@ ground.rotation.x=-PI/2;ground.position.z=-30;scene.add(ground);
 // buildings, windows, doors, diyas
 const pal=['#e8553c','#3b6fd4','#f06aa8','#f2a33a','#2aa89a','#7b3fc4','#d9384f'];
 const winOn=new THREE.MeshBasicMaterial({color:0xffe08a}),winOff=new THREE.MeshBasicMaterial({color:0x6a4a6a});
-const doorM=new THREE.MeshLambertMaterial({color:0x6b1620}),gar=new THREE.MeshBasicMaterial({color:0xff8a00});
+const doorT=mk(128,256,(g,w,h)=>{g.fillStyle='#6b1620';g.fillRect(0,0,w,h);g.strokeStyle='#e8b84a';g.lineWidth=3;g.strokeRect(10,10,w-20,h-20);g.strokeRect(24,24,w-48,h/2-30);g.strokeRect(24,h/2+6,w-48,h/2-30);g.fillStyle='#e8b84a';for(let y=40;y<h-30;y+=36)for(let x=40;x<w-30;x+=48){g.beginPath();g.arc(x,y,3,0,7);g.fill()}g.beginPath();g.arc(w-30,h/2,7,0,7);g.fill()});
+const doorM=new THREE.MeshLambertMaterial({map:doorT}),gar=new THREE.MeshBasicMaterial({color:0xff8a00});
 const diyas=[];
+const railT=mk(128,64,(g)=>{g.fillStyle='#111';g.fillRect(0,0,128,5);for(let x=4;x<128;x+=10)g.fillRect(x,5,3,59);g.fillRect(0,58,128,6)});
 for(const s of[-1,1])for(let i=0;i<15;i++){
   const z=12-i*5.2,h=6.5+rnd()*4;
   const b=new THREE.Mesh(new THREE.BoxGeometry(5.2,h,5),lam(pal[(i*3+(s>0?2:0))%7]));
   b.position.set(s*8.6,h/2,z);scene.add(b);
   const door=new THREE.Mesh(new THREE.BoxGeometry(.3,2.6,1.5),doorM);door.position.set(s*5.9,1.3,z);scene.add(door);
   const g1=new THREE.Mesh(new THREE.BoxGeometry(.3,.4,2),gar);g1.position.set(s*5.85,2.9,z);scene.add(g1);
+  {const by=4.0,sl=new THREE.Mesh(new THREE.BoxGeometry(1,.14,2),lam('#2a1a22'));sl.position.set(s*5.5,by,z);scene.add(sl);
+  const rm=new THREE.MeshBasicMaterial({map:railT,transparent:true,side:THREE.DoubleSide,alphaTest:.3});
+  const fr=new THREE.Mesh(new THREE.PlaneGeometry(2,.8),rm);fr.rotation.y=PI/2;fr.position.set(s*5.0,by+.47,z);scene.add(fr);
+  for(const e of[-1,1]){const sw=new THREE.Mesh(new THREE.PlaneGeometry(1,.8),rm);sw.position.set(s*5.5,by+.47,z+e);scene.add(sw)}
+  const gw=new THREE.Mesh(new THREE.PlaneGeometry(1,1.6),winOn);gw.position.set(s*5.97,by+.95,z);gw.rotation.y=-s*PI/2;scene.add(gw);
+  const gg=spr(0xffc060,3.2,.5);gg.position.set(s*5.7,by+.9,z);scene.add(gg)}
   for(const dz of[-1.2,1.2]){const d=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),new THREE.MeshBasicMaterial({color:0xffa030}));d.scale.y=.55;d.position.set(s*5.5,.1,z+dz);scene.add(d);const f=spr(0xff8a1e,1.8,.9);f.position.set(s*5.5,.35,z+dz);scene.add(f);diyas.push(f)}
   for(let r=1;r<Math.floor(h/2.6);r++)for(const dz of[-1.4,1.4]){
     const on=rnd()>.2,w=new THREE.Mesh(new THREE.PlaneGeometry(1,1.4),on?winOn:winOff);
@@ -106,7 +114,12 @@ const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xffd86b}));m.positi
 
 // banner
 {const t=mk(1100,150,(g,w,h)=>{const r=g.createLinearGradient(0,0,0,h);r.addColorStop(0,'#c8143a');r.addColorStop(1,'#8a0c28');g.fillStyle=r;g.fillRect(0,0,w,h);g.strokeStyle='#ffd86b';g.lineWidth=8;g.strokeRect(10,10,w-20,h-20);g.fillStyle='#ffd86b';g.font='bold 86px Georgia,serif';g.textAlign='center';g.textBaseline='middle';g.fillText('✦ Happy Diwali ✦',w/2,h/2+4)});
-const m=new THREE.Mesh(new THREE.PlaneGeometry(11.6,1.6),new THREE.MeshBasicMaterial({map:t,side:THREE.DoubleSide}));m.position.set(0,6.2,-3);scene.add(m)}
+const m=new THREE.Mesh(new THREE.PlaneGeometry(11.6,1.6),new THREE.MeshBasicMaterial({map:t,side:THREE.DoubleSide}));m.position.set(0,6.2,-1);scene.add(m)}
+// gate with pillars and pumpkins
+{const cm=lam('#f1dcc0');for(const s of[-1,1]){const p=new THREE.Mesh(new THREE.BoxGeometry(.8,7.5,.8),cm);p.position.set(s*5.55,3.75,-1);scene.add(p);
+ const pk=new THREE.Mesh(new THREE.SphereGeometry(.38,14,10),new THREE.MeshLambertMaterial({color:0xff7a1a,emissive:0x4a1800}));pk.scale.y=.75;pk.position.set(s*4.5,.3,-1);scene.add(pk);
+ const pg=spr(0xff9a2e,2.6,.7);pg.position.set(s*4.5,.7,-1);scene.add(pg);diyas.push(pg)}
+ const lt=new THREE.Mesh(new THREE.BoxGeometry(12,.6,.8),cm);lt.position.set(0,7.6,-1);scene.add(lt)}
 
 // couple
 const eye=new THREE.MeshBasicMaterial({color:0x1a1020});
@@ -132,7 +145,7 @@ function beauty(isGirl,main,trim,hairC){const g=new THREE.Group(),skin='#f1c9a0'
   return g}
 const couple=new THREE.Group();
 const gA=beauty(1,'#f08a24','#ffd86b','#15101a'),bA=beauty(0,'#f5f2ee','#ffd86b','#15101a');
-const crew=[gA,bA];[-.55,.55].forEach((x,i)=>{crew[i].position.x=x;crew[i].rotation.y=PI;couple.add(crew[i])});
+const crew=[gA,bA];[-.42,.42].forEach((x,i)=>{crew[i].position.x=x;crew[i].rotation.order='YXZ';crew[i].rotation.y=PI;couple.add(crew[i])});
 scene.add(couple);couple.position.z=8;
 const mkTag=(A,B)=>{const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:mk(512,96,(g,w,h)=>{g.font='bold 50px Georgia,serif';g.textAlign='center';g.textBaseline='middle';g.shadowColor='#000';g.shadowBlur=8;g.fillStyle='#fff';g.fillText(A+' ♥ '+B,w/2,h/2)}),transparent:true,depthWrite:false}));tag.scale.set(4.4,.84,1);scene.add(tag);return tag};
 const tagA=mkTag(A,B);
@@ -153,8 +166,7 @@ const db=$('draw');db.onpointerdown=e=>{e.preventDefault();down()};['pointerup',
 // couple lighting a diya
 const dx=0,dz=-7,dyg=new THREE.Group();dyg.position.set(dx,0,dz);scene.add(dyg);
 const rg=new THREE.Mesh(new THREE.PlaneGeometry(4.6,4.6),new THREE.MeshBasicMaterial({map:mand,transparent:true}));rg.rotation.x=-PI/2;rg.position.y=.025;dyg.add(rg);
-const pA=beauty(1,'#7b3fc4','#ffd86b','#15101a'),pB=beauty(0,'#e8553c','#ffd86b','#15101a');
-[pA,pB].forEach((p,i)=>{p.rotation.order='YXZ';p.rotation.y=i?-PI/2:PI/2;p.rotation.x=.28;p.position.x=i?1.3:-1.3;dyg.add(p)});
+
 const bowl=new THREE.Mesh(new THREE.SphereGeometry(.5,20,10,0,PI*2,PI/2,PI/2),new THREE.MeshLambertMaterial({color:0xb5532a,side:THREE.DoubleSide}));bowl.scale.y=.7;bowl.position.y=.4;dyg.add(bowl);
 const rim=new THREE.Mesh(new THREE.TorusGeometry(.5,.045,6,24),new THREE.MeshBasicMaterial({color:0xffd86b}));rim.rotation.x=PI/2;rim.position.y=.4;dyg.add(rim);
 const oil=new THREE.Mesh(new THREE.CircleGeometry(.47,20),new THREE.MeshBasicMaterial({color:0xffb347}));oil.rotation.x=-PI/2;oil.position.y=.38;dyg.add(oil);
@@ -162,7 +174,7 @@ const flame=new THREE.Mesh(new THREE.ConeGeometry(.13,.5,10),new THREE.MeshBasic
 const fglow=spr(0xff9a2e,4.2,0);fglow.position.y=.8;dyg.add(fglow);
 const dLight=new THREE.PointLight(0xffa040,0,12);dLight.position.y=1.4;dyg.add(dLight);
 const ring=[];for(let i=0;i<8;i++){const a=i/8*PI*2,x=Math.cos(a)*2.15,z=Math.sin(a)*2.15;const d=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),new THREE.MeshBasicMaterial({color:0xb5532a}));d.scale.y=.55;d.position.set(x,.1,z);const f=spr(0xff8a1e,1.6,0);f.position.set(x,.4,z);dyg.add(d,f);ring.push(f)}
-let igniting=false,litT=0;$('lit').onclick=()=>{igniting=true};
+let igniting=false,litT=0,goD=false,lighting=false;$('lit').onclick=()=>{goD=true};
 
 // lanterns
 const lan=[];
@@ -200,12 +212,13 @@ const clock=new THREE.Clock();let t=0,lookY=1.8;
   cam.position.x+=(P.x*.6-cam.position.x)*Math.min(1,dt*3);cam.position.y+=(5.4-cam.position.y)*Math.min(1,dt*3);cam.position.z+=(P.z+8.5-cam.position.z)*Math.min(1,dt*3);
   fwT=Math.max(0,fwT-dt);lookY+=((fwT>0?11:1.8)-lookY)*Math.min(1,dt*3);cam.lookAt(P.x,lookY,P.z-3-(fwT>0?8:0));
   if(holding&&cur){hold+=dt;const s=Math.min(1,hold/2.4);cur.scale.setScalar(Math.max(.01,s));cur.rotation.z+=dt*.8}
-  if(Math.hypot(P.x-dx,P.z-dz)<10)igniting=true;
+  if(moving){goD=false;lighting=false}
+  if(goD){const vx=dx-P.x,vz=dz+1.6-P.z,d=Math.hypot(vx,vz);if(d>.25){const s=Math.min(d,4.5*dt);P.x+=vx/d*s;P.z+=vz/d*s;crew.forEach(m=>{let a=Math.atan2(vx,vz)-m.rotation.y;a=Math.atan2(Math.sin(a),Math.cos(a));m.rotation.y+=a*Math.min(1,dt*8);m.position.y=Math.abs(Math.sin(t*9))*.09})}else{lighting=true;igniting=true;crew.forEach(m=>{let a=PI-m.rotation.y;a=Math.atan2(Math.sin(a),Math.cos(a));m.rotation.y+=a*Math.min(1,dt*8)})}}
   if(igniting)litT=Math.min(1,litT+dt*.3);
   const fk=1+Math.sin(t*14)*.12;flame.scale.setScalar(Math.max(.001,litT*fk));flame.scale.y*=1+Math.sin(t*19)*.1;
   fglow.material.opacity=litT*.9;dLight.intensity=litT*1.9*fk;
   ring.forEach((f,i)=>f.material.opacity=Math.min(1,Math.max(0,(litT-.35)/.65*2-i*.14))*(.8+Math.sin(t*9+i)*.15));
-  pA.rotation.x=.28+Math.sin(t*2)*.03;pB.rotation.x=.28+Math.sin(t*2+1)*.03;
+  crew.forEach((m,i)=>{m.rotation.x=lighting?.28+Math.sin(t*2+i)*.03:0});
   stars.forEach((s,i)=>{s.rotation.y=Math.sin(t*.8+i)*.6;s.scale.setScalar(1+Math.sin(t*3+i)*.05)});
   diyas.forEach((f,i)=>{f.material.opacity=.7+Math.sin(t*9+i*1.7)*.2});
   scene.userData.bulbs.material.size=.8+Math.sin(t*4)*.12;
